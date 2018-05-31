@@ -1,9 +1,7 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 
 public class Server
 {
@@ -11,75 +9,79 @@ public class Server
     private ServerSocket server = null;
     private Socket client = null;
     private BufferedReader in = null;
-    private PrintWriter out = null;
+    private OutputStream out = null;
     private String line = "";
-    private CmdInterpreter command = new CmdInterpreter();
+    private TreeManager treeManager = new TreeManager();
 
     private Server()
     {
+//        try
+//        {
+//            System.out.println( "Uruchamianie serwera..." );
+//            server = new ServerSocket( port );
+//        }
+//        catch( IOException e )
+//        {
+//            printError( "Nie można uzyskać dostępu do portu " + port );
+//            stop();
+//        }
+
+    }
+
+    private void waitForClient()
+    {
         try
         {
-            System.out.println( "Uruchamianie serwera..." );
-            server = new ServerSocket( port );
+            System.out.println( "Oczekiwanie na klienta..." );
+            client = server.accept();
+            in = new BufferedReader( new InputStreamReader( ( client.getInputStream() ) ) );
+            out = client.getOutputStream();
+            System.out.println( "Połączono z klientem " + client.toString() );
         }
         catch( IOException e )
         {
-            printError( "Nie można uzyskać dostępu do portu " + port );
+            printError( "Nieudana próba podłączenai klienta na porcie " + port );
             stop();
         }
-
     }
 
     private void start()
     {
-        System.out.println( server.toString() );
-        do
+        while( true )
         {
-            try
-            {
-                System.out.println( "Oczekiwanie na klienta..." );
-                client = server.accept();
-                System.out.println( "Połączono z klientem " + client.toString() );
-            }
-            catch( IOException e )
-            {
-                printError( "Nieudana próba podłączenia klienta na porcie " + port );
-                stop();
-            }
-            try
-            {
-                in = new BufferedReader( new InputStreamReader( client.getInputStream() ) );
-                out = new PrintWriter( client.getOutputStream(), true );
-            }
-            catch( IOException e )
-            {
-                printError( "Nieudana próba podłączenia klienta na porcie " + port );
-                stop();
-            }
-        }while( listenSocket() );
-
-        stop();
+            waitForClient();
+            listenSocket();
+        }
     }
 
-    private boolean listenSocket()
+    private void listenSocket()
     {
         try
         {
-            while( !line.equals( "0" ) )
+            while( true )
             {
                 line = in.readLine();
                 System.out.println( "Otrzymano zapytanie: " + line );
-                line = command.execute( line );
-                out.println( line );
+                String response = treeManager.execute( line );
+
+                // Header
+                sendResponse( "txt" );
+                // Odpowiedź na zapytanie
+                sendResponse( response );
             }
         }
         catch( Exception e )
         {
             printError( "Utracono połączenie z klientem" );
-            return true;
         }
+    }
 
-        return false;
+    private void sendResponse( String text ) throws IOException
+    {
+        byte[] textBytes = text.getBytes();
+        byte[] textSizeBytes = ByteBuffer.allocate( 4 ).putInt( textBytes.length ).array();
+        out.write( textSizeBytes );
+        out.write( textBytes );
     }
 
     private void stop()
@@ -109,6 +111,9 @@ public class Server
     public static void main( String[] args )
     {
         Server server = new Server();
-        server.start();
+
+        server.treeManager.generateGraphvizCode();
+
+        //server.start();
     }
 }
