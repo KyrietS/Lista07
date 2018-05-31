@@ -15,17 +15,16 @@ public class Server
 
     private Server()
     {
-//        try
-//        {
-//            System.out.println( "Uruchamianie serwera..." );
-//            server = new ServerSocket( port );
-//        }
-//        catch( IOException e )
-//        {
-//            printError( "Nie można uzyskać dostępu do portu " + port );
-//            stop();
-//        }
-
+        try
+        {
+            System.out.println( "Uruchamianie serwera..." );
+            server = new ServerSocket( port );
+        }
+        catch( IOException e )
+        {
+            printError( "Nie można uzyskać dostępu do portu " + port );
+            stop();
+        }
     }
 
     private void waitForClient()
@@ -62,11 +61,8 @@ public class Server
             {
                 line = in.readLine();
                 System.out.println( "Otrzymano zapytanie: " + line );
-                String response = treeManager.execute( line );
+                Response response = treeManager.execute( line );
 
-                // Header
-                sendResponse( "txt" );
-                // Odpowiedź na zapytanie
                 sendResponse( response );
             }
         }
@@ -76,12 +72,22 @@ public class Server
         }
     }
 
-    private void sendResponse( String text ) throws IOException
+    private void sendResponse( Response response) throws IOException
     {
-        byte[] textBytes = text.getBytes();
-        byte[] textSizeBytes = ByteBuffer.allocate( 4 ).putInt( textBytes.length ).array();
-        out.write( textSizeBytes );
-        out.write( textBytes );
+        // header
+        out.write( response.getHeaderSize() );
+        out.write( response.getHeader() );
+        // message
+        out.write( response.getMessageSize() );
+        out.write( response.getMessage() );
+        // image
+        if( response.getImageSize() != null )
+        {
+            out.write( response.getImageSize() );
+            out.write( response.getImage() );
+        }
+
+        out.flush();
     }
 
     private void stop()
@@ -112,8 +118,8 @@ public class Server
     {
         Server server = new Server();
 
-        server.treeManager.generateGraphvizCode();
+        //server.treeManager.execute( "abc" );
 
-        //server.start();
+        server.start();
     }
 }

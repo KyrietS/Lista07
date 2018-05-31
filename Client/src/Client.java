@@ -71,59 +71,14 @@ public class Client
     // (2) header = "txt/jpg": wiadomość tekstowa, po której następuje obrazek JPG
     private void readResponse()
     {
-        String header = readTextResponse();
+        String header = Response.readText( in );
         // Ze schematu wynika, że wiadomość tekstowa od serwera jest zawsze
-        String textResponse = readTextResponse();
+        String textResponse = Response.readText( in );
         System.out.println( "Odpowiedź: " + textResponse );
 
         // Jeśli nagłówek to "txt/jpg", to znaczy, że po wiadomości tekstowej, będzie obrazek
         if( header.equals( "txt/jpg" ) )
-            readImageResponse();
-    }
-
-    private void readImageResponse()
-    {
-        try
-        {
-            byte[] imgSizeBytes = new byte[ 4 ];
-            in.read( imgSizeBytes );
-            int imgSize = ByteBuffer.wrap( imgSizeBytes ).asIntBuffer().get();
-            byte[] imgBytes = new byte[ imgSize ];
-            in.read( imgBytes );
-
-            BufferedImage image = ImageIO.read( new ByteArrayInputStream( imgBytes ) );
-            ImageIO.write( image, "jpg", new File("C:\\Users\\Sebastian\\Desktop\\obrazek-z-serwera.jpg"));
-            System.out.println("Zapisano obrazek na pulpicie");
-        }
-        catch( IOException e )
-        {
-            printError( "Błąd przy pobieraniu obrazka z serwera" );
-            stop();
-        }
-        catch( Exception e )
-        {
-            printError( "Błąd przy zapisywaniu obrazka" );
-        }
-    }
-
-    private String readTextResponse()
-    {
-        try
-        {
-            byte[] textSizeBytes = new byte[ 4 ];
-            in.read( textSizeBytes );
-            int textSize = ByteBuffer.wrap( textSizeBytes ).asIntBuffer().get();
-            byte[] textBytes = new byte[ textSize ];
-            in.read( textBytes );
-            String text = new String( textBytes );
-            return text;
-        }
-        catch( IOException e )
-        {
-            printError( "Błąd przy pobieraniu wiadomości tekstowej z serwera" );
-            stop();
-            return null;
-        }
+            Response.readImage(in, "Client\\client-tree.jpg");
     }
 
     private void sendRequest()
