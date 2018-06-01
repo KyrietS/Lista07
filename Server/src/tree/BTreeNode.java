@@ -22,38 +22,43 @@ public class BTreeNode< T extends Comparable<T> >
         n = 0;
     }
 
-    public void generateGraphvizNode( Integer nodeIndex, StringBuilder code )
+    public int generateGraphvizNode( int nodeIndex, StringBuilder code )
     {
         // Indeks obecnego wierzchołka
         int thisIndex = nodeIndex;
 
         // Wypisywanie siebie
         code.append( "node" ).append( thisIndex ).append( "[label = \"<f0> " );
-        for( int i = 0; i < keys.length; i++ )
+        for( int i = 0; i < n; i++ )
         {
-            if( keys[ i ] != null )
+            //if( keys[ i ] != null )
                 code.append( "|" ).append( keys[i].toString() ).append( "| <f" ).append( i+1 ).append( "> " );
-            else
-                break;
+            //else
+                //break;
                 //code.append( "|" ).append( "null" ).append( "| <f" ).append( i + 1 ).append( "> " );
         }
         code.append( "\"];\n" );
 
+        if( leaf == true )
+            return nodeIndex;
         // Wypisywanie dzieciaków
-        for( int i = 0; i < C.length; i++ )
+        // Wyjaśnienie (i <= n) - dzieci jest tyle, ile kluczy + 1
+        for( int i = 0; i < C.length && i <= n; i++ )
         {
             // Każ dzieciakowi się wypisać
             if( C[ i ] != null )
             {
                 nodeIndex++;
-                int tempIndex = nodeIndex;  // indeks przetwarzanego dzieciaka
-                C[ i ].generateGraphvizNode( nodeIndex, code );
+                int childIndex = nodeIndex;  // indeks przetwarzanego dzieciaka
+                nodeIndex = C[ i ].generateGraphvizNode( nodeIndex, code );
 
                 // Stwórz relację z dzieciakiem
                 code.append( "\"node" ).append( thisIndex ).append( "\":f" ).append( i ).append( " -> " );
-                code.append( "\"node" ).append( tempIndex ).append( "\"\n" );
+                code.append( "\"node" ).append( childIndex ).append( "\"\n" );
             }
         }
+
+        return nodeIndex;
     }
 
     // Funkcja pomocnicza, któa zwraca indeks pierwszego klucza, który jest

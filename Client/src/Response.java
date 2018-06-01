@@ -35,11 +35,11 @@ public class Response
             in.read( imgSizeBytes );
             int imgSize = ByteBuffer.wrap( imgSizeBytes ).asIntBuffer().get();
             byte[] imgBytes = new byte[ imgSize ];
-            in.read( imgBytes );
+            in.readNBytes( imgBytes, 0, imgSize);
 
             BufferedImage image = ImageIO.read( new ByteArrayInputStream( imgBytes ) );
             ImageIO.write( image, "jpg", new File( path ));
-            System.out.println("Zapisano obraz w " + path);
+            //System.out.println("Zapisano obraz w " + path);
             return true;
         }
         catch( IOException e )

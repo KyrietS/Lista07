@@ -60,7 +60,7 @@ public class Server
             while( true )
             {
                 line = in.readLine();
-                System.out.println( "Otrzymano zapytanie: " + line );
+                //System.out.println( "Otrzymano zapytanie: " + line );
                 Response response = treeManager.execute( line );
 
                 sendResponse( response );
