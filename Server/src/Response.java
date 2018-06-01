@@ -36,7 +36,7 @@ public class Response
             this.image = byteArrayOutputStream.toByteArray();
             this.imageSize = ByteBuffer.allocate( 4 ).putInt( this.image.length ).array();
         }
-        catch( IOException e )
+        catch( Exception e )
         {
             System.out.println( "Błąd przy odczytywaniu bajtów z obrazu" );
         }

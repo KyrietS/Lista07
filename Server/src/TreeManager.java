@@ -45,15 +45,18 @@ class TreeManager
     {
 
         String[] args = cmd.split( " " );
-        if( args.length < 2 )
-            return syntaxErrorResponse();
 
         switch( args[ 0 ].toLowerCase() )
         {
-            case "addtree": return addTree( args );
+            case "newtree": return addTree( args );
             case "insert": return insert( args );
             case "search": return search( args );
             case "delete": return delete( args );
+            case "?":
+            case "help":
+            case "pomoc": return help( args );
+            case "about":
+            case "autor": return about( args );
             default: return syntaxErrorResponse();
         }
     }
@@ -81,7 +84,7 @@ class TreeManager
             default: return errorResponse( "Nie można utworzyć drzewa zawierającego typ <" + args[ 1 ] + ">" );
         }
 
-        return textResponse( "Pomyślnie utworzono drzewo" );
+        return imageResponse( "Pomyślnie utworzono drzewo" );
     }
 
     private Response insert( String[] args )
@@ -90,6 +93,40 @@ class TreeManager
             return syntaxErrorResponse();
         if( treeType == TreeType.NONE )
             return errorResponse( "Musisz najpierw utworzyć drzewo" );
+        Object[] values = readAllArguments( args );
+        if( values == null )
+            return syntaxErrorResponse();
+
+        // Po uzupełnieniu tablicy 'values' jesteśmy pewni, że dane były poprawne.
+        // Umieszczamy je w drzewie. Nie ma znaczenia jaki to typ. Wiemy, że są porównywalne.
+        for( Object obj : values )
+        {
+            if( tree.search( (Comparable) obj ) == null )
+                tree.insert( ( Comparable ) obj );
+        }
+
+        return imageResponse( "Pomyślnie dodano element(y)" );
+    }
+
+    private Response delete( String[] args )
+    {
+        if( args.length < 2 )
+            return syntaxErrorResponse();
+        if( treeType == TreeType.NONE )
+            return errorResponse( "Musisz najpierw utworzyć drzewo" );
+        Object[] values = readAllArguments( args );
+        if( values == null )
+            return syntaxErrorResponse();
+
+
+        for( Object obj : values )
+                tree.remove( ( Comparable ) obj );
+
+        return imageResponse( "Pomyślnie usunięto element(y)" );
+    }
+
+    private Object[] readAllArguments( String[] args )
+    {
         Object[] values = new Object[ args.length - 1 ];
         try
         {
@@ -105,25 +142,37 @@ class TreeManager
         }
         catch( Exception e )
         {
-            return syntaxErrorResponse();
+            return null;
         }
 
-        // Po uzupełnieniu tablicy 'values' jesteśmy pewni, że dane były poprawne.
-        // Umieszczamy je w drzewie. Nie ma znaczenia jaki to typ. Wiemy, że są porównywalne.
-        for( Object c : values )
-            tree.insert( (Comparable)c );
-
-        return imageResponse( "Pomyślnie dodano element(y)" );
+        return values;
     }
 
     private Response search( String[] args )
     {
-        return null;
-    }
+        if( args.length != 2 )
+            return syntaxErrorResponse();
+        if( treeType == TreeType.NONE )
+            return errorResponse( "Musisz najpierw utworzyć drzewo" );
+        Object key = null;
+        try
+        {
+            switch( treeType )
+            {
+                case INTEGER: key = Integer.valueOf( args[ 1 ] ); break;
+                case DOUBLE:  key = Double.valueOf( args[ 1 ] );  break;
+                case STRING:  key = String.valueOf( args[ 1 ] );  break;
+            }
+        }
+        catch( Exception e )
+        {
+            return syntaxErrorResponse();
+        }
 
-    private Response delete( String[] args )
-    {
-        return null;
+        if( tree.search( (Comparable) key ) != null )
+            return textResponse( "Podany klucz (" + key + ") znajduje się w drzewie" );
+        else
+            return textResponse( "Podany klucz (" + key + ") nie znajduje się w drzewie" );
     }
 
     private Response imageResponse( String text )
@@ -159,7 +208,8 @@ class TreeManager
         StringBuilder code = new StringBuilder( "digraph g {\n" );
         code.append( "node [shape = record,height=.1];\n" );
 
-        tree.root.generateGraphvizNode( 0, code );
+        if( tree != null && tree.root != null )
+            tree.root.generateGraphvizNode( 0, code );
 
         code.append( "}" );
 
@@ -192,5 +242,35 @@ class TreeManager
         }
 
         //System.out.println("Graphviz code:\n" + code.toString() );
+    }
+
+    private Response help( String[] args )
+    {
+        String helpText = "";
+        helpText += "-----------------------------------------------------------------------------\n";
+        helpText += "Lista dostępnych poleceń:\n";
+        helpText += " - Nowe drzewo\n";
+        helpText += "\tnewtree <Integer|Double|String> <size>\n";
+        helpText += "\tsize - rozmiar drzewa (maksymalna ilość kluczy w wierzchołku)\n";
+        helpText += " - Dodaj elementy\n\tinsert <arg1> <arg2> ...\n";
+        helpText += " - Usuń elementy\n\tdelete <arg1> <arg2> ...\n";
+        helpText += " - Znajdź element\n\tsearch <arg>\n";
+        helpText += " - Wyświetl pomoc\n\tpomoc | help | ?\n";
+        helpText += " - O autorze\n\tautor | about\n";
+        helpText += "-----------------------------------------------------------------------------\n";
+        return textResponse( helpText );
+    }
+
+    private Response about( String[] args )
+    {
+        String aboutText = "";
+        aboutText += "----------------------------------------------\n";
+        aboutText += "       Program na Kurs Programowania\n\n";
+        aboutText += "           Autor: Sebastian Fojcik\n\n";
+        aboutText += " Niniejszy projekt jest realizacją listy nr 7\n";
+        aboutText += "----------------------------------------------\n";
+
+        return textResponse( aboutText );
+
     }
 }

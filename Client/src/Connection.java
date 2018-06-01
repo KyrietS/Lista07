@@ -1,12 +1,12 @@
-import javafx.application.Platform;
-
 import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 public class Connection implements Runnable
 {
+    public static Consumer< Boolean > setInterfaceDisable;
     private int port = 4444;
     private String host = "localhost";
     private Socket socket = null;
@@ -28,6 +28,7 @@ public class Connection implements Runnable
     private void connectToServer()
     {
         boolean connected = false;
+        setInterfaceDisable.accept( true );
 
         log.println( "Uruchamianie klienta..." );
         do
@@ -39,6 +40,7 @@ public class Connection implements Runnable
                 in = socket.getInputStream();
                 log.println( "Połączono z serwerem " + socket.toString() );
                 connected = true;
+                setInterfaceDisable.accept( false );
                 return;
             }
             catch( UnknownHostException e )

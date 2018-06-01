@@ -398,7 +398,7 @@ public class BTreeNode< T extends Comparable<T> >
 
         // Jeśli znaleziony klucz jest równy 'k', zwróć ten wierzchołek.
         //if( keys[ i ] == k )
-        if( keys[ i ].compareTo( k ) == 0 )
+        if( i < n && keys[ i ].compareTo( k ) == 0 )
             return this;
 
         // Jeśli nie znaleziono tutaj klucza, a ten wierzchołek jest liściem.
