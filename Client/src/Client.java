@@ -4,6 +4,10 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
+/**
+ * Aplikacja kliencka do obsługi B-Drzewa
+ * @author Sebastian Fojcik
+ */
 public class Client extends Application
 {
 
@@ -11,7 +15,7 @@ public class Client extends Application
     public void start( Stage primaryStage ) throws Exception
     {
         Parent root = FXMLLoader.load(getClass().getResource( "mainWindow.fxml" ));
-        primaryStage.setTitle( "Klient" );
+        primaryStage.setTitle( "B-Drzewo - klient" );
         primaryStage.setScene( new Scene( root ) );
         primaryStage.show();
     }

@@ -4,9 +4,17 @@ import java.net.UnknownHostException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
+/**
+ * Obsługa połączenia między klientem, a serwerem.
+ * Ze względu na możliwe opóxnienia powinna być obsługiwana wyłącznie
+ * poprzez odrębne wątki. W przeciwnym przypadku GUI JavaFX może się blokować
+ * na czas oczekiwania na odpowiedź.
+ *
+ * @author Sebastian Fojcik
+ */
 public class Connection implements Runnable
 {
-    public static Consumer< Boolean > setInterfaceDisable;
+    static Consumer< Boolean > setInterfaceDisable;        // Funkcja blokująca kontrolki w GUI, np. w czasie ładowania
     private int port = 4444;
     private String host = "localhost";
     private Socket socket = null;
@@ -14,7 +22,7 @@ public class Connection implements Runnable
     private InputStream in = null;
     private Console log;
 
-    public Connection( Console log )
+    Connection( Console log )
     {
         this.log = log;
     }
@@ -41,7 +49,6 @@ public class Connection implements Runnable
                 log.println( "Połączono z serwerem " + socket.toString() );
                 connected = true;
                 setInterfaceDisable.accept( false );
-                return;
             }
             catch( UnknownHostException e )
             {
@@ -62,7 +69,7 @@ public class Connection implements Runnable
         } while( !connected );
     }
 
-    public void sendRequest( String request, Runnable reloadImage )
+    void sendRequest( String request, Runnable reloadImage )
     {
         if( request.equals( "--q" ) )
             stop();
@@ -79,12 +86,13 @@ public class Connection implements Runnable
     private void readResponse( Runnable reloadImage )
     {
         String header = Response.readText( in );
-        // Ze schematu wynika, że wiadomość tekstowa od serwera jest zawsze
+                                                            // Ze schematu wynika, że wiadomość tekstowa od serwera jest zawsze
         String textResponse = Response.readText( in );
+                                                            // Uwaga: może wypisać 'null', gdy wiadomość była pusta.
         log.println( textResponse );
 
         // Jeśli nagłówek to "txt/jpg", to znaczy, że po wiadomości tekstowej, będzie obrazek
-        if( header.equals( "txt/jpg" ) )
+        if( header != null && header.equals( "txt/jpg" ) )
         {
             //log.print( "Przeładowano obrazek" );
             Response.readImage( in, "Client\\client-tree.jpg" );

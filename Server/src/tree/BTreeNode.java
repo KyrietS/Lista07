@@ -1,12 +1,23 @@
 package tree;
 
+/**
+ * Wierzchołek drzewa
+ * @author Sebastian Fojcik
+ * @param <T> Typ przechowywany w wierzchołku
+ */
+@SuppressWarnings( { "unchecked", "ManualArrayCopy" } )
 public class BTreeNode< T extends Comparable<T> >
 {
-    public Comparable<T> keys[];     // Tablica kluczy.
-    int t;          // Minimalna ilość kluczy jaka może się znajdować w Wierzchołku.
-    public BTreeNode C[];  // Tablica dzieci.
-    int n;          // Aktualna liczba kluczy.
-    boolean leaf;   // Prawda, gdy wierzchołek jest liściem. W przeciwnym przypadku fałsz.
+    /** Tablica kluczy */
+    Comparable<T> keys[];
+    /** Minimalna ilość kluczy jaka może się znajdować w wierzchołku (BTreeNode) */
+    private int t;
+    /** Tablica dzieciaków wierzchołka */
+    BTreeNode C[];
+    /** Aktualna liczba przechowywanych kluczy w wierzchołku*/
+    int n;
+    /** Prawda, gdy wierzchołek jest liście. Inaczej: fałsz. */
+    boolean leaf;
 
     BTreeNode( int t, boolean leaf )
     {
@@ -22,6 +33,7 @@ public class BTreeNode< T extends Comparable<T> >
         n = 0;
     }
 
+    /** Generuje kod Graphviz i dopisuje go do 'code' */
     public int generateGraphvizNode( int nodeIndex, StringBuilder code )
     {
         // Indeks obecnego wierzchołka
@@ -29,14 +41,10 @@ public class BTreeNode< T extends Comparable<T> >
 
         // Wypisywanie siebie
         code.append( "node" ).append( thisIndex ).append( "[label = \"<f0> " );
+
         for( int i = 0; i < n; i++ )
-        {
-            //if( keys[ i ] != null )
-                code.append( "|" ).append( keys[i].toString() ).append( "| <f" ).append( i+1 ).append( "> " );
-            //else
-                //break;
-                //code.append( "|" ).append( "null" ).append( "| <f" ).append( i + 1 ).append( "> " );
-        }
+            code.append( "|" ).append( keys[i].toString() ).append( "| <f" ).append( i+1 ).append( "> " );
+
         code.append( "\"];\n" );
 
         if( leaf == true )
@@ -61,24 +69,22 @@ public class BTreeNode< T extends Comparable<T> >
         return nodeIndex;
     }
 
-    // Funkcja pomocnicza, któa zwraca indeks pierwszego klucza, który jest
-    // większy lub równy 'k'
-    int findKey( T k )
+    /** Funkcja pomocnicza, któa zwraca indeks pierwszego klucza, który jest
+        większy lub równy 'k' */
+    private int findKey( T k )
     {
         int idx = 0;
-        //while( idx < n && keys[ idx ] < k )
         while( idx < n && keys[ idx ].compareTo( k ) < 0 )
             idx++;
         return idx;
     }
 
-    // Funkcja do usuwania klucza 'k' z poddrzewa zakorzenionego w tym wierzchołku.
+    /** Funkcja do usuwania klucza 'k' z poddrzewa zakorzenionego w tym wierzchołku. */
     void remove( T k )
     {
         int idx = findKey( k );
 
         // Klucz do usunięcia znajduje się w tym wierzchołku.
-        //if( idx < n && keys[ idx ] == k )
         if( idx < n && keys[ idx ].compareTo( k ) == 0 )
         {
             // Jeśli wierzchołek jest liściem, wywoływane jest 'removeFromLeaf'
@@ -115,8 +121,8 @@ public class BTreeNode< T extends Comparable<T> >
         }
     }
 
-    // Funkcja do usuwania klucza o indeksie 'idx' z wierzchołka, który jest liściem.
-    void removeFromLeaf( int idx )
+    /** Funkcja do usuwania klucza o indeksie 'idx' z wierzchołka, który jest liściem. */
+    private void removeFromLeaf( int idx )
     {
         // Przesuń wszystkie klucza za 'idx' o jedno miejsce w lewo.
         for( int i = idx+1; i < n; i++ )
@@ -126,8 +132,8 @@ public class BTreeNode< T extends Comparable<T> >
         n--;
     }
 
-    // Funkcja do usuwania klucza o indeksie 'idx' z wierzchołka, który NIE jest liściem.
-    void removeFromNonLeaf( int idx )
+    /** Funkcja do usuwania klucza o indeksie 'idx' z wierzchołka, który NIE jest liściem. */
+    private void removeFromNonLeaf( int idx )
     {
         T k = (T)keys[ idx ];
 
@@ -150,8 +156,8 @@ public class BTreeNode< T extends Comparable<T> >
         }
     }
 
-    // Funkcja zwracająca poprzednika z keys[idx]
-    T getPred( int idx )
+    /** Funkcja zwracająca poprzednika z keys[idx] */
+    private T getPred( int idx )
     {
         // Poruszamy się prawymi wskaźnikami, aż nie dotrzemy do liścia.
         BTreeNode<T> cur = C[ idx ];
@@ -162,7 +168,8 @@ public class BTreeNode< T extends Comparable<T> >
         return (T)cur.keys[ cur.n - 1 ];
     }
 
-    T getSucc( int idx )
+    /** Funkcja zwracająca następnika z keys[idx] */
+    private T getSucc( int idx )
     {
         // Poruszamy się lewymi wierzchołkami, aż nie dotrzemy do liścia.
         BTreeNode cur = C[ idx + 1 ];
@@ -173,8 +180,8 @@ public class BTreeNode< T extends Comparable<T> >
         return (T)cur.keys[ 0 ];
     }
 
-    // Funkcja wypełniająca dziecko, które ma mniej niż t-1 kluczy
-    void fill( int idx )
+    /** Funkcja wypełniająca dziecko, które ma mniej niż t-1 kluczy */
+    private void fill( int idx )
     {
         // Jeśli poprzednie dzieclko (C[idx-1]) ma więcej niż t-1 kluczy, zabierz klucz od tego dziecka.
         if( idx != 0 && C[ idx-1 ].n >= t )
@@ -196,8 +203,8 @@ public class BTreeNode< T extends Comparable<T> >
         }
     }
 
-    // Funkcja do zabierania klucza z C[idx-1] i wkładania go do C[idx]
-    void borrowFromPrev( int idx )
+    /** Funkcja do zabierania klucza z C[idx-1] i wkładania go do C[idx] */
+    private void borrowFromPrev( int idx )
     {
         BTreeNode child = C[ idx ];
         BTreeNode sibling = C[ idx - 1 ];
@@ -225,8 +232,8 @@ public class BTreeNode< T extends Comparable<T> >
         sibling.n -= 1;
     }
 
-    // Funkcja do zabierania klucza z C[idx+1] i wkładania go do C[idx]
-    void borrowFromNext( int idx )
+    /** Funkcja do zabierania klucza z C[idx+1] i wkładania go do C[idx] */
+    private void borrowFromNext( int idx )
     {
         BTreeNode child = C[ idx ];
         BTreeNode sibling = C[ idx + 1 ];
@@ -257,9 +264,9 @@ public class BTreeNode< T extends Comparable<T> >
         sibling.n -= 1;
     }
 
-    //Funkcja łączoąca C[idx] z [Cidx+1]
-    // C[idx+1] jest usuwany po złączeniu
-    void merge( int idx )
+    /** Funkcja łączoąca C[idx] z [Cidx+1]
+        C[idx+1] jest usuwany po złączeniu */
+    private void merge( int idx )
     {
         BTreeNode child = C[ idx ];
         BTreeNode sibling = C[ idx+1 ];
@@ -287,8 +294,8 @@ public class BTreeNode< T extends Comparable<T> >
         n--;
     }
 
-    // Funkcja pomocnicza, wstawiająca klucz do wierzchołka.
-    // Wierzchołek NIE może być pełny, gdy ta funkcja jest wywołana.
+    /** Funkcja pomocnicza, wstawiająca klucz do wierzchołka.
+        Wierzchołek NIE może być pełny, gdy ta funkcja jest wywołana. */
     void insertNonFull( T k )
     {
         // Indeks skrajnie prawego elementu
@@ -299,7 +306,6 @@ public class BTreeNode< T extends Comparable<T> >
         {
             // (1) Szukanie miejsca, w którym można umieścić klucz.
             // (2) Przesuwanie pozostałych elementów o jedno miejsce w prawo.
-            //while( i >= 0 && keys[ i ] > k )
             while( i >= 0 && keys[ i ].compareTo( k ) > 0 )
             {
                 keys[ i + 1 ] = keys[ i ];
@@ -313,7 +319,6 @@ public class BTreeNode< T extends Comparable<T> >
         else // Jeśli wierzchołek nie jest liściem
         {
             // Znajdź dziecko, do którego należy włożyć klucz
-            //while( i >= 0 && keys[ i ] > k )
             while( i >= 0 && keys[ i ].compareTo( k ) > 0 )
                 i--;
 
@@ -322,7 +327,6 @@ public class BTreeNode< T extends Comparable<T> >
             {
                 // Jeśli dzieciak jest pełny, to go podziel
                 splitChild( i + 1, C[ i + 1 ] );
-                //if( keys[ i + 1 ] < k )
                 if( keys[ i + 1 ].compareTo( k ) < 0 )
                     i++;
             }
@@ -330,8 +334,8 @@ public class BTreeNode< T extends Comparable<T> >
         }
     }
 
-    // Funkcja pomocnicza, która dzieli dzieciaka 'y'.
-    // Uwaga: dzieciak 'y' musi być pełny, gdy ta funkcja jest wywołana.
+    /** Funkcja pomocnicza, która dzieli dzieciaka 'y'.
+        Uwaga: dzieciak 'y' musi być pełny, gdy ta funkcja jest wywołana. */
     void splitChild( int i, BTreeNode y )
     {
         // Stwórz nowy wierzchołek
@@ -370,7 +374,7 @@ public class BTreeNode< T extends Comparable<T> >
         n = n + 1;
     }
 
-    // Funkcja wypisująca drzewo w porządku rosnącym
+    /** Funkcja wypisująca drzewo w porządku rosnącym */
     void traverse()
     {
         int i;
@@ -388,16 +392,15 @@ public class BTreeNode< T extends Comparable<T> >
             C[ i ].traverse();
     }
 
+    /** Przeszukuje drzewo i poddrzewa w poszukiwaniu 'k' */
     BTreeNode search( T k )
     {
         // Znajdź pierwszy klucz większy lub równy 'k'
         int i = 0;
-        //while( i < n && keys[ i ] < k )
         while( i < n && keys[ i ].compareTo( k ) < 0 )
             i++;
 
         // Jeśli znaleziony klucz jest równy 'k', zwróć ten wierzchołek.
-        //if( keys[ i ] == k )
         if( i < n && keys[ i ].compareTo( k ) == 0 )
             return this;
 

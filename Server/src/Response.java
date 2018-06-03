@@ -1,33 +1,36 @@
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
-public class Response
+/**
+ * Odpowiedź wysyłana do użytkownika
+ * @author Sebastian Fojcik
+ */
+class Response
 {
-    private byte[] headerSize;
-    private byte[] header;
+    private byte[] headerSize;              // Rozmiar nagłówka (int) zapisany na 4 bajtach
+    private byte[] header;                  // Nagłówek zapisany na [headerSize] bajtach
 
-    private byte[] messageSize;
-    private byte[] message;
+    private byte[] messageSize;             // Rozmiar wiadomości (int) zapisany na 4 bajtach
+    private byte[] message;                 // Treść wiadomości
 
-    private byte[] imageSize;
-    private byte[] image;
+    private byte[] imageSize;               // Rozmiar obrazka (int) zapisany na 4 bajtach (max 2 GB)
+    private byte[] image;                   // Obrazek JPG zapisany w postaci tablicy bajtów
 
-    public void setHeader( String header )
+    void setHeader( String header )
     {
         this.header = header.getBytes();
         this.headerSize = ByteBuffer.allocate( 4 ).putInt( this.header.length ).array();
     }
 
-    public void setMessage( String message )
+    void setMessage( String message )
     {
         this.message = message.getBytes();
         this.messageSize = ByteBuffer.allocate( 4 ).putInt( this.message.length ).array();
     }
 
-    public void setImage( BufferedImage image )
+    void setImage( BufferedImage image )
     {
         try
         {
@@ -42,32 +45,32 @@ public class Response
         }
     }
 
-    public byte[] getHeaderSize()
+    byte[] getHeaderSize()
     {
         return headerSize;
     }
 
-    public byte[] getHeader()
+    byte[] getHeader()
     {
         return header;
     }
 
-    public byte[] getMessageSize()
+    byte[] getMessageSize()
     {
         return messageSize;
     }
 
-    public byte[] getMessage()
+    byte[] getMessage()
     {
         return message;
     }
 
-    public byte[] getImageSize()
+    byte[] getImageSize()
     {
         return imageSize;
     }
 
-    public byte[] getImage()
+    byte[] getImage()
     {
         return image;
     }

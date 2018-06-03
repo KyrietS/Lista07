@@ -8,10 +8,14 @@ import javafx.scene.image.ImageView;
 
 import java.io.File;
 
+/**
+ * Główny kontroler GUI klienta.
+ * @author Sebastian Fojcik
+ */
 public class Controller
 {
-    Connection connection;
-    Console console;
+    private Connection connection;
+    private Console console;
 
     @FXML
     private TextArea textArea;

@@ -1,8 +1,11 @@
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.ByteBuffer;
 
+/**
+ * @author Sebastian Fojcik
+ */
+@SuppressWarnings( "InfiniteLoopStatement" )                           // Wyłącza ostrzeżenia o nieskończoneych pętlach
 public class Server
 {
     private int port = 4444;
@@ -10,8 +13,7 @@ public class Server
     private Socket client = null;
     private BufferedReader in = null;
     private OutputStream out = null;
-    private String line = "";
-    private TreeManager treeManager = new TreeManager();
+    private TreeManager treeManager = new TreeManager();               // Interfejs pomiędzy serwerem a strukturą BTree
 
     private Server()
     {
@@ -27,6 +29,7 @@ public class Server
         }
     }
 
+    /** Oczekuje na przyłączenie klienta */
     private void waitForClient()
     {
         try
@@ -44,6 +47,7 @@ public class Server
         }
     }
 
+    /** Standardowe działanie serwera */
     private void start()
     {
         while( true )
@@ -53,25 +57,31 @@ public class Server
         }
     }
 
+    /** Oczekuje na zapytanie od klienta i je wykonuje */
     private void listenSocket()
     {
-        try
+        String request;                                             // Zapytanie otrzymane od klienta.
+        while( true )
         {
-            while( true )
+            try
             {
-                line = in.readLine();
-                //System.out.println( "Otrzymano zapytanie: " + line );
-                Response response = treeManager.execute( line );
-
+                // Wczytaj zapytanie od klienta
+                request = in.readLine();
+                // Wykonaj odebrane zapytanie
+                Response response = treeManager.execute( request );
+                // Wyślij rezultat do klienta.
                 sendResponse( response );
+
             }
-        }
-        catch( Exception e )
-        {
-            printError( "Utracono połączenie z klientem" );
+            catch( Exception e )
+            {
+                printError( "Utracono połączenie z klientem" );
+                return;
+            }
         }
     }
 
+    /** Wysyła odpowiedź do klienta */
     private void sendResponse( Response response) throws IOException
     {
         // header
@@ -90,6 +100,7 @@ public class Server
         out.flush();
     }
 
+    /** Bezpieczne wyłączenie serwera */
     private void stop()
     {
         try
@@ -109,6 +120,7 @@ public class Server
         }
     }
 
+    /** Pomocnicza funkcja wypisująca błąd z komunikatem */
     private void printError( String errorMessage )
     {
         System.out.println( "[Wystąpił błąd]: " + errorMessage );
@@ -117,9 +129,6 @@ public class Server
     public static void main( String[] args )
     {
         Server server = new Server();
-
-        //server.treeManager.execute( "abc" );
-
         server.start();
     }
 }

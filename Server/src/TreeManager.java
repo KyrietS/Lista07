@@ -1,18 +1,12 @@
-// Dostępne polecenia:
-// newtree int | double | float | string
-// insert value
-// search value
-// delete value
-// draw
-// draw+ (przy użyciu graphviz)
-// Jeśli drzewo nie jest puste, to użycie newtree zmusi użyszkodnika to wpisania !newtree
-
 import tree.BTree;
-
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
 
+/**
+ * Klasa zarządzająca drzewem. Przetwarza zapytania i przygotowuje odpowiedź
+ * @author Sebastian Fojcik
+ */
 @SuppressWarnings("unchecked")
 class TreeManager
 {
@@ -20,50 +14,37 @@ class TreeManager
     private enum TreeType{ NONE, INTEGER, DOUBLE, STRING }
     private TreeType treeType = TreeType.NONE;
 
-    TreeManager()
-    {
-        // Przykłdowe drzewo do testów
-//        tree = new BTree< Integer >( 2 );
-//        treeType = TreeType.INTEGER;
-//        String[] args = {"insert", "7"};
-//        insert( args );
-//        //tree.insert( 7 );
-//
-//        addPictureToResponse( new Response() );
-
-//        tree.insert( 5 );
-//        tree.insert( 4 );
-//        tree.insert( 3 );
-//        tree.insert( 2 );
-//        tree.insert( 1 );
-//        tree.insert( 6 );
-//        tree.insert( 0 );
-
-    }
-
+    /** Wykonuje otrzymane polecenie i przygotowuje odpowiedź */
     Response execute( String cmd )
     {
-
-        String[] args = cmd.split( " " );
-
-        switch( args[ 0 ].toLowerCase() )
+        try
         {
-            case "newtree": return addTree( args );
-            case "insert": return insert( args );
-            case "search": return search( args );
-            case "delete": return delete( args );
-            case "?":
-            case "help":
-            case "pomoc": return help( args );
-            case "about":
-            case "autor": return about( args );
-            default: return syntaxErrorResponse();
+            String[] args = cmd.split( " " );
+
+            switch( args[ 0 ].toLowerCase() )
+            {
+                case "newtree": return newTree( args );
+                case "insert":  return insert( args );
+                case "search":  return search( args );
+                case "delete":  return delete( args );
+                case "?":
+                case "help":
+                case "pomoc":   return help();
+                case "about":
+                case "autor":   return about();
+                default:        return syntaxErrorResponse();
+            }
+        }
+        catch( Exception e ) // Nieznany błąd
+        {
+            System.out.println("Wystąpił błąd przy przetwarzaniu zapytania: " + cmd);
+            return textResponse( "Wystąpił błąd przy przetwarzaniu zapytania" );
         }
     }
 
-    private Response addTree( String[] args )
+    /** Tworzy nowe drzewo */
+    private Response newTree( String[] args )
     {
-        // np. addtree Integer 3   ( addtree <Typ> <Rozmiar> )
         if( args.length != 3 )
             return syntaxErrorResponse();
 
@@ -87,6 +68,7 @@ class TreeManager
         return imageResponse( "Pomyślnie utworzono drzewo" );
     }
 
+    /** Wstawia elementy do drzewa */
     private Response insert( String[] args )
     {
         if( args.length < 2 )
@@ -97,17 +79,17 @@ class TreeManager
         if( values == null )
             return syntaxErrorResponse();
 
-        // Po uzupełnieniu tablicy 'values' jesteśmy pewni, że dane były poprawne.
-        // Umieszczamy je w drzewie. Nie ma znaczenia jaki to typ. Wiemy, że są porównywalne.
+        // Po sprarsowaniu argumentów możemy je umieścić w drzewie
         for( Object obj : values )
         {
-            if( tree.search( (Comparable) obj ) == null )
+            if( tree.search( (Comparable) obj ) == null )   // Nie dodajemy duplikatów
                 tree.insert( ( Comparable ) obj );
         }
 
         return imageResponse( "Pomyślnie dodano element(y)" );
     }
 
+    /** Usuwa elementy z drzewa */
     private Response delete( String[] args )
     {
         if( args.length < 2 )
@@ -118,15 +100,17 @@ class TreeManager
         if( values == null )
             return syntaxErrorResponse();
 
-
+        // Po sparsowaniu argumentów usuwamy elementy z drzewa.
         for( Object obj : values )
                 tree.remove( ( Comparable ) obj );
 
         return imageResponse( "Pomyślnie usunięto element(y)" );
     }
 
+    /** Funkcja pomocnicza parsująca argumenty na typ drzewa */
     private Object[] readAllArguments( String[] args )
     {
+        // Uwaga: args[ 0 ] zawiera nazwę polecenia, dlatego jest ten napis jest pomijany
         Object[] values = new Object[ args.length - 1 ];
         try
         {
@@ -140,7 +124,7 @@ class TreeManager
                 }
             }
         }
-        catch( Exception e )
+        catch( Exception e ) // Jeśli conajmniej jedna konwersja się nie powiedzie
         {
             return null;
         }
@@ -148,6 +132,7 @@ class TreeManager
         return values;
     }
 
+    /** Szuka elementu w drzewie */
     private Response search( String[] args )
     {
         if( args.length != 2 )
@@ -175,6 +160,7 @@ class TreeManager
             return textResponse( "Podany klucz (" + key + ") nie znajduje się w drzewie" );
     }
 
+    /** Przygotowuje odpowiedź skłądającą się z wiadomości 'text' oraz obrazka */
     private Response imageResponse( String text )
     {
         Response response = new Response();
@@ -184,6 +170,7 @@ class TreeManager
         return response;
     }
 
+    /** Przygotowuje odpowiedź tekstową dla klienta */
     private Response textResponse( String text )
     {
         Response response = new Response();
@@ -192,27 +179,32 @@ class TreeManager
         return response;
     }
 
+    /** Predefiniowana odpowiedź informująca o niepoprawnej składni polecenia */
     private Response syntaxErrorResponse()
     {
         return textResponse( "Niepoprawne polecenie. Wpisz \"?\" lub \"pomoc\", aby uzyskać więcej informacji" );
     }
 
+    /** Przygotowuje odpowiedź z komunikatem błędu */
     private Response errorResponse( String text )
     {
         return textResponse( "[Błąd] " + text );
     }
 
+    /** Funkcja pomocnicza, która generuje obraz drzewa i dodaje go do 'response' */
     private void addPictureToResponse( Response response )
     {
 
+        // ------------- Generowanie kodu Graphviz -----------------
         StringBuilder code = new StringBuilder( "digraph g {\n" );
         code.append( "node [shape = record,height=.1];\n" );
-
         if( tree != null && tree.root != null )
             tree.root.generateGraphvizNode( 0, code );
-
         code.append( "}" );
+        // --------------------------------------------------------
 
+
+        // Zapisanie kodu do pliku
         try (PrintWriter out = new PrintWriter("Server\\server-tree")) {
             out.println( code.toString() );
         }
@@ -221,14 +213,18 @@ class TreeManager
             System.out.println( "Błąd przy zapisie pliku" );
         }
 
-        // Uruchamianie Graphviz i generowanie plik JPG
+        // Uruchamianie Graphviz i generowanie pliku JPG
         try
         {
             Process graphviz = new ProcessBuilder("D:\\2. PROGRAMY\\Graphviz\\bin\\dot.exe","-Tjpg","-O",
                     "-Gdpi=300", System.getProperty( "user.dir" )+"\\Server\\server-tree").start();
             graphviz.waitFor();
         }
-        catch( Exception ignore ){ System.out.println( "Wtrakcie działania Graphviz wystąpił błąd" );}
+        catch( Exception ignore )
+        {
+            System.out.println( "Wtrakcie działania Graphviz wystąpił błąd" );
+            return;
+        }
 
         // Wczytywanie JPG do programu
         try
@@ -240,11 +236,10 @@ class TreeManager
         {
             System.out.println("Błąd odczytu pliku tree.jpg");
         }
-
-        //System.out.println("Graphviz code:\n" + code.toString() );
     }
 
-    private Response help( String[] args )
+    /** Predefiniowana odpowiedź zawierająca pomoc */
+    private Response help()
     {
         String helpText = "";
         helpText += "-----------------------------------------------------------------------------\n";
@@ -261,7 +256,8 @@ class TreeManager
         return textResponse( helpText );
     }
 
-    private Response about( String[] args )
+    /** Predefiniowana odpowiedź zawierająca informacje o autorze */
+    private Response about()
     {
         String aboutText = "";
         aboutText += "----------------------------------------------\n";

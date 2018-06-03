@@ -1,9 +1,17 @@
 package tree;
 
+/**
+ * Generyczne B-Drzewo
+ * @author Sebastian Fojcik
+ * @param <T>
+ */
+@SuppressWarnings( "unchecked" )
 public class BTree< T extends Comparable<T> >
 {
-    public BTreeNode<T> root;     // Wskaźnik na korzeń
-    int t;              // Minimalna ilość elementów w wierzchołku
+    /** Wskaźnik na korzeń */
+    public BTreeNode<T> root;
+    /** Minimalna ilość elementów w wierzchołku */
+    private int t;
 
     public BTree( int t )
     {
@@ -11,14 +19,15 @@ public class BTree< T extends Comparable<T> >
         this.t = t;
     }
 
-    // Wypisuje drzewo w porządku rosnącym
+    /** Wypisuje drzewo w porządku rosnącym */
+    @SuppressWarnings( "unused" )
     public void traverse()
     {
         if( root != null )
             root.traverse();
     }
 
-    // Funkcja szukająca klucza w drzewie
+    /** Funkcja szukająca klucza w drzewie */
     public BTreeNode search( T k )
     {
         if( root == null )
@@ -27,7 +36,7 @@ public class BTree< T extends Comparable<T> >
             return root.search( k );
     }
 
-    // Funkcja wkładająca klucz do drzewa
+    /** Funkcja wkładająca klucz do drzewa */
     public void insert( T k )
     {
         // Jeśli drzewo jest puste
@@ -71,7 +80,7 @@ public class BTree< T extends Comparable<T> >
         }
     }
 
-    // Funkcja usuwająca klucz z drzewa.
+    /** Funkcja usuwająca klucz z drzewa. */
     public void remove( T k )
     {
         if( root == null )
@@ -87,7 +96,6 @@ public class BTree< T extends Comparable<T> >
         // jako nowy korzeń. W przeciwnym wypadku ustaw korzeń na null.
         if( root.n == 0 )
         {
-            BTreeNode tmp = root;
             if( root.leaf )
                 root = null;
             else

@@ -1,3 +1,12 @@
 digraph g {
 node [shape = record,height=.1];
+node0[label = "<f0> |20| <f1> |ala| <f2> |ma| <f3> "];
+node1[label = "<f0> |10| <f1> "];
+"node0":f0 -> "node1"
+node2[label = "<f0> |30| <f1> |5| <f2> "];
+"node0":f1 -> "node2"
+node3[label = "<f0> |lubi| <f1> "];
+"node0":f2 -> "node3"
+node4[label = "<f0> |tomek| <f1> |zosie| <f2> "];
+"node0":f3 -> "node4"
 }

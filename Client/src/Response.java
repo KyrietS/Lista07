@@ -6,7 +6,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
-public class Response
+/**
+ * Zestaw funkcji służących do odczytywania odpowiedzi od serwera ze strumienia wejścia.
+ * Odpowiedzi są przesyłane strumieniami bajtów. Zakłada się poprawność danych od serwera.
+ *
+ * @author Sebastian Fojcik
+ */
+class Response
 {
     static String readText( InputStream in )
     {
@@ -17,8 +23,7 @@ public class Response
             int textSize = ByteBuffer.wrap( textSizeBytes ).asIntBuffer().get();
             byte[] textBytes = new byte[ textSize ];
             in.read( textBytes );
-            String text = new String( textBytes );
-            return text;
+            return new String( textBytes );
         }
         catch( IOException e )
         {
@@ -27,7 +32,8 @@ public class Response
         }
     }
 
-    static boolean readImage( InputStream in, String path )
+    @SuppressWarnings( "SameParameterValue" )           // Wyłącza ostrzeżenie, że 'path' ma jedną, stałą wartość.
+    static void readImage( InputStream in, String path )
     {
         try
         {
@@ -39,18 +45,14 @@ public class Response
 
             BufferedImage image = ImageIO.read( new ByteArrayInputStream( imgBytes ) );
             ImageIO.write( image, "jpg", new File( path ));
-            //System.out.println("Zapisano obraz w " + path);
-            return true;
         }
         catch( IOException e )
         {
             System.out.println( "Błąd przy pobieraniu obrazka z serwera" );
-            return false;
         }
         catch( Exception e )
         {
             System.out.println( "Błąd przy zapisywaniu obrazka" );
-            return false;
         }
     }
 }
